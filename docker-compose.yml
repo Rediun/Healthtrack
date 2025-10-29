@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  
+  # --- Contenedor 1: La Base de Datos MongoDB ---
+  mongo-db:
+    image: mongo:latest
+    container_name: mongo-healthtrack
+    ports:
+      - "27017:27017" # Expone el puerto de Mongo a tu máquina local
+    volumes:
+      - mongo-data:/data/db # Guarda los datos de Mongo aunque apagues el contenedor
+    networks:
+      - healthtrack-net
+
+  # --- Contenedor 2: La API de Spring Boot ---
+  api-healthtrack:
+    container_name: api-healthtrack
+    # Le dice a Compose que construya la imagen usando el Dockerfile de esta carpeta
+    build: .
+    ports:
+      - "8080:8080" # Expone el puerto de la API a tu máquina local
+    depends_on:
+      - mongo-db # Le dice a la API que no inicie HASTA que la BD esté lista
+    networks:
+      - healthtrack-net
+    environment:
+      # Esta es la variable de entorno que Spring usará para conectarse
+      # 'mongo-db' es el nombre del servicio de Mongo en este mismo archivo
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo-db:27017/HealthTrack
+
+volumes:
+  mongo-data: # Define el volumen de persistencia
+
+networks:
+  healthtrack-net: # Define la red privada para que se comuniquen

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.healthtrack.grpc";
+
+service UsuarioService {
+    rpc CrearUsuario (UsuarioRequest) returns (UsuarioResponse);
+    rpc ObtenerUsuario (UsuarioIdRequest) returns (UsuarioResponse);
+    rpc ActualizarUsuario (UsuarioRequest) returns (UsuarioResponse);
+    rpc EliminarUsuario (UsuarioIdRequest) returns (Empty);
+}
+
+message UsuarioRequest {
+    string id = 1; // String porque es Mongo
+    string nombre = 2;
+    string apellido = 3; // Nuevo
+    string email = 4;
+    string rol = 5;
+    string telefono = 6; // Nuevo
+    string especialidad = 7; // Nuevo (opcional, solo si es doctor)
+}
+
+message UsuarioResponse {
+    string id = 1;
+    string nombre = 2;
+    string apellido = 3;
+    string email = 4;
+    string rol = 5;
+}
+
+message UsuarioIdRequest {
+    string id = 1;
+}
+
+message Empty {}

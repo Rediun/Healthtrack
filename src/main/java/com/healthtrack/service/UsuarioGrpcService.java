@@ -74,4 +74,42 @@ public class UsuarioGrpcService extends UsuarioServiceGrpc.UsuarioServiceImplBas
         }
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void actualizarUsuario(UsuarioRequest request, StreamObserver<UsuarioResponse> responseObserver) {
+        // 1. Verificamos si existe el ID que nos mandan
+        if (usuarioRepository.existsById(request.getId())) {
+            
+            // 2. Creamos el objeto con los datos NUEVOS
+            Usuario usuarioUpdate = new Usuario();
+            usuarioUpdate.setId(request.getId()); // Importante: Mantener el mismo ID
+            usuarioUpdate.setNombre(request.getNombre());
+            usuarioUpdate.setApellido(request.getApellido());
+            usuarioUpdate.setEmail(request.getEmail());
+            usuarioUpdate.setRol(request.getRol());
+            usuarioUpdate.setTelefono(request.getTelefono());
+            
+            if ("DOCTOR".equalsIgnoreCase(request.getRol())) {
+                usuarioUpdate.setEspecialidad(request.getEspecialidad());
+            }
+
+            // 3. Guardamos (En Mongo, save() funciona como Update si el ID ya existe)
+            Usuario guardado = usuarioRepository.save(usuarioUpdate);
+
+            // 4. Respondemos con los datos actualizados
+            UsuarioResponse response = UsuarioResponse.newBuilder()
+                    .setId(guardado.getId())
+                    .setNombre(guardado.getNombre())
+                    .setApellido(guardado.getApellido() != null ? guardado.getApellido() : "")
+                    .setEmail(guardado.getEmail())
+                    .setRol(guardado.getRol())
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } else {
+            // Si no existe, error
+            responseObserver.onError(new RuntimeException("No se puede actualizar. Usuario no encontrado."));
+        }
+    }
 }
